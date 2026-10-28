@@ -1,0 +1,42 @@
+name: Extract Starter ZIP
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  extract:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Extract starter ZIP
+        shell: bash
+        run: |
+          set -e
+          ZIP_FILE="Rainbow_Unreal_Starter.zip"
+
+          if [ ! -f "$ZIP_FILE" ]; then
+            echo "ZIP file not found: $ZIP_FILE"
+            echo "Files in repository:"
+            ls -la
+            exit 1
+          fi
+
+          mkdir -p extracted-starter
+          unzip -o "$ZIP_FILE" -d extracted-starter
+
+      - name: Commit extracted files
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add extracted-starter
+          if git diff --cached --quiet; then
+            echo "No new files to commit."
+          else
+            git commit -m "Extract Rainbow Unreal starter ZIP"
+            git push
+          fi
